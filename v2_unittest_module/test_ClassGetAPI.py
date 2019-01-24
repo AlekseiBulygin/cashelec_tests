@@ -2,6 +2,7 @@ import unittest
 import datetime
 import time
 import threading
+import numpy
 from v2_unittest_module.ClassGetAPI import GetAPI
 
 
@@ -30,12 +31,13 @@ class TestGetAPI(unittest.TestCase):
             thread.join()
         all_process_time = time.time() - start_time
         rps = round(len(self.returns) / all_process_time)
-        percentil = (len([i[3] for i in self.returns if i[3] <= 0.45])/len(self.returns)) * 100
+        percentile_list = sorted([i[3] for i in self.returns])
+        percentile = numpy.percentile(a=percentile_list, q=80, interpolation='nearest')
 
         for result in self.returns:
             self.assertEqual(result[0], 200)
         self.assertGreaterEqual(rps, 5, 'rps < 5')
-        self.assertGreaterEqual(percentil, 80, f'{percentil}% < 450 ms')
+        self.assertGreaterEqual(percentile, 0.45, '80% latency > 450 ms')
 
     def create_thread(self, name):
         name = f"Thread №{name}"
